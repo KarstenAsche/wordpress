@@ -57,6 +57,7 @@ Open **http://localhost:8080**. Complete the WordPress installation wizard, incl
 | `.env` | Local credentials and configuration; **not committed to Git**. |
 | `.gitignore` | Excludes secret and unnecessary local files from version control. |
 | `README.md` | Setup, configuration, usage, and test instructions. |
+' `Wordpress Checkliste Karsten Asche.pdf` | Project Checklist |
 
 > [!NOTE]
 > No Dockerfile or custom application source is required: the project uses prebuilt container images. The `.env` file is created locally and is intentionally absent from the repository.
