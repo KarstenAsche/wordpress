@@ -52,7 +52,7 @@ Open **http://localhost:8080**. Complete the WordPress installation wizard, incl
 
 | File | Purpose |
 | --- | --- |
-| `docker-compose.yaml` | Defines WordPress and MariaDB services, configuration, ports, volumes, and restart behavior. |
+| `docker-compose.yml` | Defines WordPress and MariaDB services, configuration, ports, volumes, and restart behavior. |
 | `.env.example` | Shareable template for required database settings. |
 | `.env` | Local credentials and configuration; **not committed to Git**. |
 | `.gitignore` | Excludes secret and unnecessary local files from version control. |
@@ -90,7 +90,7 @@ Docker Compose substitutes these values into the service definitions. WordPress 
 
 - **Change the HTTP port:** Change the left side of `"8080:80"` in the WordPress service, for example `"8081:80"`, then visit `http://localhost:8081` for a new installation.
 - **Change the database name or user:** Update `.env` **before the first database initialization**. MariaDB initialization variables do not automatically modify an already initialized database stored in a volume.
-- **Change image versions:** Edit the `image:` tags in `docker-compose.yaml`, then review release notes and run `docker compose up -d`. Back up data before an upgrade. For strict reproducibility, pin and verify immutable image digests.
+- **Change image versions:** Edit the `image:` tags in `docker-compose.yml`, then review release notes and run `docker compose up -d`. Back up data before an upgrade. For strict reproducibility, pin and verify immutable image digests.
 - **Change restart behavior:** Edit `restart: unless-stopped` on the relevant service. This policy restarts the service after unexpected termination, but respects a manual stop.
 - **Change persistence:** The named volumes mount WordPress at `/var/www/html` and MariaDB at `/var/lib/mysql`. Do not remove them if you need to retain existing data.
 
@@ -130,70 +130,72 @@ docker compose down
 
 ## Testing
 
-### 1. Compose configuration
+The WordPress Docker Compose setup was successfully tested both locally and on an Ubuntu-based cloud VM.
+
+### Test Results
+
+| Test | Local | Cloud VM |
+| :--- | :--- | :--- |
+| Docker Compose configuration validation | Passed | Passed |
+| WordPress installation and accessibility | Passed | Passed |
+| MariaDB database connectivity | Passed | Passed |
+| WordPress administrator login | Passed | Passed |
+| Data persistence after container recreation | Passed | Passed |
+| Automatic container restart | Passed | Passed |
+| Access via public IP on port 8080 | N/A | Passed |
+
+---
+
+### Data Persistence
+
+Data persistence was verified by creating and publishing a WordPress post named `Docker Persistence Test`.
+
+The containers were then stopped, removed, and recreated using:
 
 ```bash
-docker compose config --quiet
+docker compose down
+docker compose up -d
 ```
 
-**Expected:** No validation errors. Avoid sharing the unredacted output of `docker compose config`, as it may expose values substituted from `.env`.
+After restarting the environment, the published post, administrator account, and WordPress configuration remained available.
 
-### 2. Availability and administrator access
+**Result:** Passed.
 
-Open `http://localhost:8080`, complete the WordPress installation, and sign in to `/wp-admin`.
+---
 
-**Local result:** Passed — WordPress was installed and was accessible through port `8080`.
+### Automatic Container Restart
 
-### 3. Data persistence
+The automatic restart functionality was tested using the `unless-stopped` restart policy.
 
-1. Publish a post titled `Docker Persistence Test`.
-2. Run `docker compose down`.
-3. Run `docker compose up -d`.
-4. Sign in to WordPress and verify that the published post is still available.
-
-**Local result:** Passed — the published post remained available after container recreation.
-
-### 4. Automatic restart
-
-With `restart: unless-stopped` in place, verify the current counter:
-
-```bash
-docker inspect -f '{{.RestartCount}}' $(docker compose ps -q wordpress)
-```
-
-For the Apache image, an example test of application-process termination is:
+The Apache process inside the WordPress container was terminated using:
 
 ```bash
 docker compose exec -u root wordpress apache2ctl -k stop
 ```
 
-In Git Bash on Windows, if path conversion interferes with Linux command arguments, prefix the command with `MSYS_NO_PATHCONV=1`. After the service recovers, check:
+Docker automatically restarted the container. The restart counter increased from 0 to 1, confirming that the restart policy worked as expected.
 
-```bash
-docker compose ps
-docker inspect -f 'Status={{.State.Status}} RestartCount={{.RestartCount}}' $(docker compose ps -q wordpress)
-```
-
-**Expected:** Status returns to `running` and `RestartCount` increases. A deliberate `docker compose stop` is not a suitable restart-policy test.
-
-**Local result:** Passed — the WordPress restart counter increased from `0` to `1` after Apache was stopped.
+**Result:** Passed.
 
 ### 5. Public Cloud VM access
 
-**Status:** Pending. After deployment, verify that WordPress is reachable at `http://<SERVER_IP>:8080` and that the administrator can sign in. Repeat persistence and restart tests on the VM.
+The WordPress application was successfully deployed and tested on an Ubuntu-based cloud VM.
+The following checks were completed:
+- WordPress is accessible via the public server IP on port 8080.
+- Administrator authentication works correctly.
+- WordPress successfully communicates with MariaDB.
+- WordPress data remains persistent after container recreation.
+- Automatic container recovery was successfully tested.
 
-## Cloud VM Deployment
+Cloud VM result: Passed — all required deployment and functionality tests were completed successfully.
 
-On a VM with Git and Docker Compose installed:
 
-1. Clone the repository.
-2. Create a local `.env` from `.env.example` and set unique credentials.
-3. Run `docker compose config --quiet` and `docker compose up -d`.
-4. Verify status with `docker compose ps` and inspect logs if necessary.
-5. Allow inbound TCP port `8080` in the applicable firewall rules **only for the intended test access**.
-6. Open `http://<SERVER_IP>:8080` and run the WordPress installation wizard.
+## Deployment Verification
 
-The deployment has **not yet been verified**. The course requires direct access through the VM's IP address on port `8080`. For real production use, enable HTTPS and restrict exposure, preferably via a reverse proxy.
+The deployment was successfully completed and verified on an Ubuntu-based cloud VM.
+WordPress is accessible through the server's public IP address on port 8080. Administrator authentication, database connectivity, persistent storage, and automatic container recovery were successfully tested.
+The deployment and verification process was also documented in a video recording.
+**Result**: Passed
 
 ## Security Notes
 
