@@ -1,0 +1,7 @@
+# Environment Variables and Secrets
+.env.*
+!.env.example
+
+# IDE and OS
+.vscode/
+
