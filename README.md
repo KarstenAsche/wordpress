@@ -8,8 +8,8 @@ A reproducible WordPress environment using the official WordPress Apache image, 
 - [Quick Start](#quick-start)
 - [Repository Contents](#repository-contents)
 - [Architecture](#architecture)
-- [Configuration](#configuration)
 - [Usage](#usage)
+    - [Configuration](#configuration)
 - [Testing](#testing)
 - [Cloud VM Deployment](#cloud-vm-deployment)
 - [Security Notes](#security-notes)
@@ -72,9 +72,13 @@ Open **http://localhost:8080**. Complete the WordPress installation wizard, incl
 
 The host's port `8080` maps to WordPress's container port `80` (`8080:80`). A host-based Nginx installation can coexist with Apache inside the WordPress container.
 
-## Configuration
 
-### Environment variables
+
+## Usage
+
+### Configuration
+
+#### Environment variables
 
 Copy `.env.example` to `.env` before starting the application.
 
@@ -84,10 +88,12 @@ Copy `.env.example` to `.env` before starting the application.
 | `DB_USER` | MariaDB application user. |
 | `DB_PASSWORD` | Password for the application database user. |
 | `DB_ROOT_PASSWORD` | MariaDB root password for database initialization. |
+| `WORDPRESS_PORT`| Host port used to access WordPress |
+| `WORDPRESS_DB_HOST` | Database hostname, defaulting to the MariaDB service name |
 
-Docker Compose substitutes these values into the service definitions. WordPress uses `WORDPRESS_DB_HOST=db`, `WORDPRESS_DB_NAME`, `WORDPRESS_DB_USER`, and `WORDPRESS_DB_PASSWORD`; MariaDB uses the corresponding `MARIADB_*` settings.
+Docker Compose substitutes these values into the service definitions. WordPress uses `WORDPRESS_DB_HOST`, `WORDPRESS_DB_NAME`, `WORDPRESS_DB_USER`, and `WORDPRESS_DB_PASSWORD`; MariaDB uses the corresponding `MARIADB_*` settings.
 
-### How to customize the setup
+#### How to customize the setup
 
 - **Change the HTTP port:** Change the left side of `"8080:80"` in the WordPress service, for example `"8081:80"`, then visit `http://localhost:8081` for a new installation.
 - **Change the database name or user:** Update `.env` **before the first database initialization**. MariaDB initialization variables do not automatically modify an already initialized database stored in a volume.
@@ -97,8 +103,6 @@ Docker Compose substitutes these values into the service definitions. WordPress 
 
 >[!IMPORTANT] 
 > Changing `.env` credentials after initialization does not automatically update the existing MariaDB user's password or the WordPress administrator's password.
-
-## Usage
 
 ### Start and inspect
 
